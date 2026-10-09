@@ -816,9 +816,6 @@
       max-width: 480px;
       margin: 0 auto;
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
       background-color: #000000;
     }
     @media (min-width: 768px) {
@@ -868,85 +865,23 @@
     .cover-overlay {
       position: absolute;
       inset: 0;
-      z-index: 2;
+      z-index: 10;
       pointer-events: none;
-      background: linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.1) 32%, rgba(0,0,0,0.25) 58%, rgba(0,0,0,0.85) 86%, rgba(0,0,0,0.96) 100%);
-    }
-    .cover-top-bar {
-      position: relative;
-      z-index: 5;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 14px;
-      gap: 8px;
-    }
-    .cover-brand-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255,255,255,0.18);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255,255,255,0.25);
-      padding: 6px 12px;
-      border-radius: 9999px;
-      font-size: 11px;
-      font-weight: 800;
-      color: #ffffff;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-    .cover-brand-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background-color: #22c55e;
-      box-shadow: 0 0 8px #22c55e;
-      animation: coverDotPulse 1.8s infinite;
-    }
-    @keyframes coverDotPulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.3); opacity: 0.6; }
-    }
-    .cover-skip-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255,255,255,0.92);
-      color: #0f172a;
-      border: none;
-      padding: 7px 12px;
-      border-radius: 9999px;
-      font-size: 11px;
-      font-weight: 800;
-      cursor: pointer;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
-      transition: all 0.2s ease;
-      touch-action: manipulation;
-    }
-    .cover-skip-btn:hover {
-      background: #ffffff;
-      transform: translateY(-1px) scale(1.03);
-    }
-    .cover-skip-btn:active {
-      transform: scale(0.96);
-    }
-    .cover-skip-btn svg {
-      width: 14px;
-      height: 14px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.85) 85%, rgba(0,0,0,0.96) 100%);
     }
     .cover-center-action {
-      position: relative;
-      z-index: 5;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 20;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      margin: auto 0;
       cursor: pointer;
       transition: opacity 0.3s ease, transform 0.2s ease;
+      pointer-events: auto;
     }
     .cover-play-btn {
       width: 74px;
@@ -983,26 +918,18 @@
     .cover-play-btn svg.pause-svg {
       margin-left: 0;
     }
-    .cover-play-hint {
-      margin-top: 12px;
-      font-size: 11px;
-      font-weight: 700;
-      color: #ffffff;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.8);
-      letter-spacing: 0.03em;
-      background: rgba(0,0,0,0.45);
-      padding: 4px 12px;
-      border-radius: 9999px;
-      backdrop-filter: blur(4px);
-    }
     .cover-bottom-bar {
-      position: relative;
-      z-index: 5;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 30;
       padding: 16px 14px 20px;
       display: flex;
       flex-direction: column;
       gap: 12px;
       text-align: center;
+      pointer-events: auto;
     }
     .cover-down-indicator {
       display: flex;
@@ -1066,7 +993,8 @@
       width: 16px;
       height: 16px;
     }
-    .cover-sound-btn {
+    .cover-sound-btn,
+    .cover-fullscreen-btn {
       width: 46px;
       height: 46px;
       border-radius: 14px;
@@ -1083,13 +1011,16 @@
       touch-action: manipulation;
       flex-shrink: 0;
     }
-    .cover-sound-btn:hover {
+    .cover-sound-btn:hover,
+    .cover-fullscreen-btn:hover {
       background: rgba(255,255,255,0.28);
     }
-    .cover-sound-btn:active {
+    .cover-sound-btn:active,
+    .cover-fullscreen-btn:active {
       transform: scale(0.95);
     }
-    .cover-sound-btn svg {
+    .cover-sound-btn svg,
+    .cover-fullscreen-btn svg {
       width: 18px;
       height: 18px;
     }
@@ -1929,24 +1860,23 @@
     <div class="slide cover-slide" id="slide-0">
       <div class="cover-media-container">
         
-        <div id="youtubeWrapper" class="cover-youtube-wrapper" style="display: none;">
+        <div id="youtubeWrapper" class="cover-youtube-wrapper">
           <iframe
             id="coverYoutubeIframe"
             class="cover-youtube-iframe"
-            src=""
-            data-src="https://www.youtube.com/embed/r6Qr-ek55AU?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1"
+            src="https://www.youtube.com/embed/r6Qr-ek55AU?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
           ></iframe>
         </div>
-        <div class="cover-poster-bg" style="background-image: url('https://img.youtube.com/vi/r6Qr-ek55AU/hqdefault.jpg');" onclick="window.toggleCoverVideo(event)" ontouchend="window.toggleCoverVideo(event)"></div>
+        <div class="cover-poster-bg" style="background-image: url('https://img.youtube.com/vi/r6Qr-ek55AU/hqdefault.jpg');" onclick="window.toggleCoverVideo(event)"></div>
         
 
         <!-- Dynamic contrast overlay -->
         <div class="cover-overlay"></div>
 
         <!-- Center Interactive Play Button -->
-        <div class="cover-center-action" id="coverCenterAction" onclick="window.toggleCoverVideo(event)" ontouchend="window.toggleCoverVideo(event)">
+        <div class="cover-center-action" id="coverCenterAction" onclick="window.toggleCoverVideo(event)">
           <button type="button" class="cover-play-btn" id="coverPlayBtn" aria-label="Reproducir video de presentación">
             <svg class="play-svg" viewBox="0 0 24 24" fill="currentColor">
               <path d="M8 5v14l11-7z"/>
@@ -1972,7 +1902,6 @@
               type="button"
               class="btn-cover-catalog"
               onclick="window.goToSlide(1); if (event) event.stopPropagation();"
-              ontouchend="window.goToSlide(1); if (event) event.stopPropagation();"
             >
               <span>Ver Catálogo</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1985,7 +1914,6 @@
               id="coverMuteBtn"
               class="cover-sound-btn"
               onclick="window.toggleCoverAudio(event)"
-              ontouchend="window.toggleCoverAudio(event)"
               title="Activar sonido"
             >
               <svg class="sound-on-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
@@ -1996,6 +1924,22 @@
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                 <line x1="23" y1="9" x2="17" y2="15"></line>
                 <line x1="17" y1="9" x2="23" y2="15"></line>
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              id="coverFullscreenBtn"
+              class="cover-fullscreen-btn"
+              onclick="window.toggleCoverFullscreen(event)"
+              title="Pantalla completa"
+              aria-label="Pantalla completa"
+            >
+              <svg class="fullscreen-enter-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+              </svg>
+              <svg class="fullscreen-exit-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
               </svg>
             </button>
           </div>
@@ -8249,31 +8193,48 @@ Cintura con elastico, bolsillos superiores y ruedo con botamanga</p>
     }
 
     // --- Cover Video Interactive Controls ---
+    window.isYtCoverPlaying = true;
+    var lastToggleCoverTime = 0;
     window.toggleCoverVideo = function(event) {
+      var now = Date.now();
+      if (now - lastToggleCoverTime < 350) {
+        if (event) {
+          if (event.cancelable) event.preventDefault();
+          event.stopPropagation();
+        }
+        return;
+      }
+      lastToggleCoverTime = now;
+
       if (event) {
         if (event.cancelable) event.preventDefault();
         event.stopPropagation();
       }
 
       // Check YouTube Short wrapper first
-      var ytWrapper = document.getElementById('youtubeWrapper');
       var ytIframe = document.getElementById('coverYoutubeIframe');
       var centerAction = document.getElementById('coverCenterAction');
       var playBtn = document.getElementById('coverPlayBtn');
-      var playHint = document.getElementById('coverPlayHint');
 
-      if (ytWrapper && ytIframe) {
-        if (ytWrapper.style.display === 'none' || !ytIframe.src || ytIframe.src === '' || ytIframe.src === 'about:blank') {
-          ytWrapper.style.display = 'block';
-          var dataSrc = ytIframe.getAttribute('data-src');
-          if (dataSrc) {
-            ytIframe.src = dataSrc;
-          }
-          if (centerAction) centerAction.style.display = 'none';
-        } else {
+      if (ytIframe && ytIframe.contentWindow) {
+        if (window.isYtCoverPlaying) {
           try {
             ytIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
           } catch(e) {}
+          window.isYtCoverPlaying = false;
+          if (centerAction) centerAction.style.display = 'flex';
+          if (playBtn) {
+            var playSvg = playBtn.querySelector('.play-svg');
+            var pauseSvg = playBtn.querySelector('.pause-svg');
+            if (playSvg) playSvg.style.display = 'block';
+            if (pauseSvg) pauseSvg.style.display = 'none';
+          }
+        } else {
+          try {
+            ytIframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+          } catch(e) {}
+          window.isYtCoverPlaying = true;
+          if (centerAction) centerAction.style.display = 'none';
         }
         return;
       }
@@ -8358,6 +8319,60 @@ Cintura con elastico, bolsillos superiores y ruedo con botamanga</p>
         muteBtn.setAttribute('title', 'Silenciar');
       }
     };
+
+    window.toggleCoverFullscreen = function(event) {
+      if (event) {
+        if (event.cancelable) event.preventDefault();
+        event.stopPropagation();
+      }
+      var doc = document;
+      var isFs = !!(doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement || doc.msFullscreenElement);
+      if (!isFs) {
+        var el = doc.documentElement;
+        var rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+        if (rfs) {
+          try {
+            var p = rfs.call(el);
+            if (p && p.catch) p.catch(function(e) { console.warn('Fullscreen request failed:', e); });
+          } catch(err) {
+            console.warn('Fullscreen error:', err);
+          }
+        }
+      } else {
+        var efs = doc.exitFullscreen || doc.webkitExitFullscreen || doc.mozCancelFullScreen || doc.msExitFullscreen;
+        if (efs) {
+          try {
+            var p2 = efs.call(doc);
+            if (p2 && p2.catch) p2.catch(function(e) { console.warn('Exit fullscreen failed:', e); });
+          } catch(err) {
+            console.warn('Exit fullscreen error:', err);
+          }
+        }
+      }
+    };
+
+    function updateCoverFullscreenIcons() {
+      var doc = document;
+      var isFs = !!(doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement || doc.msFullscreenElement);
+      var fsBtn = document.getElementById('coverFullscreenBtn');
+      if (!fsBtn) return;
+      var enterSvg = fsBtn.querySelector('.fullscreen-enter-svg');
+      var exitSvg = fsBtn.querySelector('.fullscreen-exit-svg');
+      if (isFs) {
+        if (enterSvg) enterSvg.style.display = 'none';
+        if (exitSvg) exitSvg.style.display = 'block';
+        fsBtn.setAttribute('title', 'Salir de pantalla completa');
+      } else {
+        if (enterSvg) enterSvg.style.display = 'block';
+        if (exitSvg) exitSvg.style.display = 'none';
+        fsBtn.setAttribute('title', 'Pantalla completa');
+      }
+    }
+
+    document.addEventListener('fullscreenchange', updateCoverFullscreenIcons);
+    document.addEventListener('webkitfullscreenchange', updateCoverFullscreenIcons);
+    document.addEventListener('mozfullscreenchange', updateCoverFullscreenIcons);
+    document.addEventListener('MSFullscreenChange', updateCoverFullscreenIcons);
 
     var covVideo = document.getElementById('coverVideo');
     if (covVideo) {
