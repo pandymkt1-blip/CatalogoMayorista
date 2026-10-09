@@ -817,6 +817,7 @@
       margin: 0 auto;
       overflow: hidden;
       background-color: #000000;
+      transition: all 0.3s ease;
     }
     @media (min-width: 768px) {
       .cover-media-container {
@@ -825,6 +826,31 @@
         height: 94%;
         margin: auto;
       }
+    }
+    /* Immersive Fullscreen Mode */
+    body.catalog-fullscreen {
+      overflow: hidden !important;
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+    }
+    body.catalog-fullscreen #slide-0,
+    body.catalog-fullscreen #slide-0.cover-slide,
+    body.catalog-fullscreen #slide-0 #coverMediaContainer,
+    body.catalog-fullscreen #slide-0 .cover-media-container {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: none !important;
+      max-height: none !important;
+      border-radius: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      z-index: 99999 !important;
+      box-shadow: none !important;
+      border: none !important;
     }
     .cover-video {
       position: absolute;
@@ -1858,18 +1884,19 @@
       <div id="slider" class="slider-container">
         
     <div class="slide cover-slide" id="slide-0">
-      <div class="cover-media-container">
+      <div class="cover-media-container" id="coverMediaContainer">
         
-        <div id="youtubeWrapper" class="cover-youtube-wrapper">
+        <div id="youtubeWrapper" class="cover-youtube-wrapper" style="display: none;">
           <iframe
             id="coverYoutubeIframe"
             class="cover-youtube-iframe"
-            src="https://www.youtube.com/embed/r6Qr-ek55AU?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1"
+            data-src="https://www.youtube.com/embed/r6Qr-ek55AU?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1&loop=1&playlist=r6Qr-ek55AU"
+            src=""
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
           ></iframe>
         </div>
-        <div class="cover-poster-bg" style="background-image: url('https://img.youtube.com/vi/r6Qr-ek55AU/hqdefault.jpg');" onclick="window.toggleCoverVideo(event)"></div>
+        <div class="cover-poster-bg" id="coverPosterBg" style="background-image: url('https://img.youtube.com/vi/r6Qr-ek55AU/hqdefault.jpg');" onclick="window.toggleCoverVideo(event)"></div>
         
 
         <!-- Dynamic contrast overlay -->
@@ -8193,11 +8220,11 @@ Cintura con elastico, bolsillos superiores y ruedo con botamanga</p>
     }
 
     // --- Cover Video Interactive Controls ---
-    window.isYtCoverPlaying = true;
+    window.isYtCoverPlaying = false;
     var lastToggleCoverTime = 0;
     window.toggleCoverVideo = function(event) {
       var now = Date.now();
-      if (now - lastToggleCoverTime < 350) {
+      if (now - lastToggleCoverTime < 250) {
         if (event) {
           if (event.cancelable) event.preventDefault();
           event.stopPropagation();
@@ -8211,16 +8238,34 @@ Cintura con elastico, bolsillos superiores y ruedo con botamanga</p>
         event.stopPropagation();
       }
 
-      // Check YouTube Short wrapper first
       var ytIframe = document.getElementById('coverYoutubeIframe');
+      var ytWrapper = document.getElementById('youtubeWrapper');
+      var posterBg = document.getElementById('coverPosterBg');
       var centerAction = document.getElementById('coverCenterAction');
       var playBtn = document.getElementById('coverPlayBtn');
 
-      if (ytIframe && ytIframe.contentWindow) {
-        if (window.isYtCoverPlaying) {
-          try {
-            ytIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-          } catch(e) {}
+      if (ytIframe) {
+        if (!window.isYtCoverPlaying) {
+          // START PLAYING: load iframe src if needed, show wrapper, hide poster and play button
+          var dataSrc = ytIframe.getAttribute('data-src');
+          if ((!ytIframe.src || ytIframe.src === '' || ytIframe.src === window.location.href) && dataSrc) {
+            ytIframe.src = dataSrc + (window.isCoverAudioMuted ? '&mute=1' : '');
+          } else if (ytIframe.contentWindow) {
+            try {
+              ytIframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+            } catch(e) {}
+          }
+          if (ytWrapper) ytWrapper.style.display = 'block';
+          if (posterBg) posterBg.style.display = 'none';
+          if (centerAction) centerAction.style.display = 'none';
+          window.isYtCoverPlaying = true;
+        } else {
+          // PAUSE
+          if (ytIframe.contentWindow) {
+            try {
+              ytIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+            } catch(e) {}
+          }
           window.isYtCoverPlaying = false;
           if (centerAction) centerAction.style.display = 'flex';
           if (playBtn) {
@@ -8229,12 +8274,6 @@ Cintura con elastico, bolsillos superiores y ruedo con botamanga</p>
             if (playSvg) playSvg.style.display = 'block';
             if (pauseSvg) pauseSvg.style.display = 'none';
           }
-        } else {
-          try {
-            ytIframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-          } catch(e) {}
-          window.isYtCoverPlaying = true;
-          if (centerAction) centerAction.style.display = 'none';
         }
         return;
       }
@@ -8247,20 +8286,12 @@ Cintura con elastico, bolsillos superiores y ruedo con botamanga</p>
         var playPromise = video.play();
         if (playPromise !== undefined) {
           playPromise.then(function() {
-            if (centerAction) centerAction.style.opacity = '0';
-            if (playBtn) {
-              var playSvg = playBtn.querySelector('.play-svg');
-              var pauseSvg = playBtn.querySelector('.pause-svg');
-              if (playSvg) playSvg.style.display = 'none';
-              if (pauseSvg) pauseSvg.style.display = 'block';
-            }
-            if (playHint) playHint.textContent = 'Toca para pausar';
+            if (centerAction) centerAction.style.display = 'none';
           }).catch(function(err) {
             console.warn('Playback error (retrying muted):', err);
             video.muted = true;
             video.play().then(function() {
-              if (centerAction) centerAction.style.opacity = '0';
-              if (playHint) playHint.textContent = 'Toca para pausar';
+              if (centerAction) centerAction.style.display = 'none';
             }).catch(function(e) {
               console.error('Playback failed completely:', e);
             });
@@ -8268,14 +8299,25 @@ Cintura con elastico, bolsillos superiores y ruedo con botamanga</p>
         }
       } else {
         video.pause();
-        if (centerAction) centerAction.style.opacity = '1';
+        if (centerAction) centerAction.style.display = 'flex';
         if (playBtn) {
-          var playSvg = playBtn.querySelector('.play-svg');
-          var pauseSvg = playBtn.querySelector('.pause-svg');
-          if (playSvg) playSvg.style.display = 'block';
-          if (pauseSvg) pauseSvg.style.display = 'none';
+          var playSvg2 = playBtn.querySelector('.play-svg');
+          var pauseSvg2 = playBtn.querySelector('.pause-svg');
+          if (playSvg2) playSvg2.style.display = 'block';
+          if (pauseSvg2) pauseSvg2.style.display = 'none';
         }
-        if (playHint) playHint.textContent = 'Toca para reproducir';
+      }
+    };
+
+    window.handleCoverVideoEnded = function() {
+      var centerAction = document.getElementById('coverCenterAction');
+      if (centerAction) centerAction.style.display = 'flex';
+      var playBtn = document.getElementById('coverPlayBtn');
+      if (playBtn) {
+        var playSvg = playBtn.querySelector('.play-svg');
+        var pauseSvg = playBtn.querySelector('.pause-svg');
+        if (playSvg) playSvg.style.display = 'block';
+        if (pauseSvg) pauseSvg.style.display = 'none';
       }
     };
 
@@ -8326,34 +8368,45 @@ Cintura con elastico, bolsillos superiores y ruedo con botamanga</p>
         event.stopPropagation();
       }
       var doc = document;
-      var isFs = !!(doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement || doc.msFullscreenElement);
-      if (!isFs) {
+      var isNativeFs = !!(doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement || doc.msFullscreenElement);
+      var body = document.body;
+      var isCssFs = body.classList.contains('catalog-fullscreen');
+      var slide0 = document.getElementById('slide-0');
+
+      if (!isNativeFs && !isCssFs) {
+        // Activate fullscreen: both CSS immersive mode and native API if supported
+        body.classList.add('catalog-fullscreen');
+        if (slide0) slide0.classList.add('cover-fullscreen-active');
+
         var el = doc.documentElement;
         var rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
         if (rfs) {
           try {
             var p = rfs.call(el);
-            if (p && p.catch) p.catch(function(e) { console.warn('Fullscreen request failed:', e); });
-          } catch(err) {
-            console.warn('Fullscreen error:', err);
-          }
+            if (p && p.catch) p.catch(function() {});
+          } catch(err) {}
         }
       } else {
+        // Exit fullscreen
+        body.classList.remove('catalog-fullscreen');
+        if (slide0) slide0.classList.remove('cover-fullscreen-active');
+
         var efs = doc.exitFullscreen || doc.webkitExitFullscreen || doc.mozCancelFullScreen || doc.msExitFullscreen;
-        if (efs) {
+        if (efs && isNativeFs) {
           try {
             var p2 = efs.call(doc);
-            if (p2 && p2.catch) p2.catch(function(e) { console.warn('Exit fullscreen failed:', e); });
-          } catch(err) {
-            console.warn('Exit fullscreen error:', err);
-          }
+            if (p2 && p2.catch) p2.catch(function() {});
+          } catch(err) {}
         }
       }
+      updateCoverFullscreenIcons();
     };
 
     function updateCoverFullscreenIcons() {
       var doc = document;
-      var isFs = !!(doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement || doc.msFullscreenElement);
+      var isNativeFs = !!(doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement || doc.msFullscreenElement);
+      var isCssFs = document.body.classList.contains('catalog-fullscreen');
+      var isFs = isNativeFs || isCssFs;
       var fsBtn = document.getElementById('coverFullscreenBtn');
       if (!fsBtn) return;
       var enterSvg = fsBtn.querySelector('.fullscreen-enter-svg');
@@ -8373,6 +8426,11 @@ Cintura con elastico, bolsillos superiores y ruedo con botamanga</p>
     document.addEventListener('webkitfullscreenchange', updateCoverFullscreenIcons);
     document.addEventListener('mozfullscreenchange', updateCoverFullscreenIcons);
     document.addEventListener('MSFullscreenChange', updateCoverFullscreenIcons);
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && document.body.classList.contains('catalog-fullscreen')) {
+        window.toggleCoverFullscreen();
+      }
+    });
 
     var covVideo = document.getElementById('coverVideo');
     if (covVideo) {
@@ -8510,6 +8568,23 @@ Cintura con elastico, bolsillos superiores y ruedo con botamanga</p>
 
     window.goToSlide = function(idx) {
       if (idx >= 0 && idx <= maxSlideIndex) {
+        if (idx !== 0) {
+          // Pause cover video and exit fullscreen if active
+          var ytIframe = document.getElementById('coverYoutubeIframe');
+          if (ytIframe && ytIframe.contentWindow && window.isYtCoverPlaying) {
+            try {
+              ytIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+            } catch(e) {}
+            window.isYtCoverPlaying = false;
+          }
+          var coverVid = document.getElementById('coverVideo');
+          if (coverVid && !coverVid.paused) {
+            coverVid.pause();
+          }
+          if (document.body.classList.contains('catalog-fullscreen')) {
+            window.toggleCoverFullscreen();
+          }
+        }
         currentIndex = idx;
         scrollSliderToActive();
       }
